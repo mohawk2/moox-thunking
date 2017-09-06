@@ -1,6 +1,6 @@
 package MooX::Thunking;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 # this bit would be MooX::Utils but without initial _ on func name
 use strict;
