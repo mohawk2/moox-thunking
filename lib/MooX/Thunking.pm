@@ -25,17 +25,16 @@ sub import {
   _override_function($target, 'has', sub {
     my ($orig, $name, %opts) = @_;
     $orig->($name, %opts), return if $opts{is} ne 'thunked';
-    $opts{is} = 'lazy';
-    my $gen_attr = "_gen_$name";
-    $orig->($gen_attr => (is => 'ro'));
-    $opts{builder} = sub { $_[0]->$gen_attr->(); };
-    install_modifier $target, 'around', 'BUILDARGS' => sub {
-      my ($orig, $self) = (shift, shift);
-      my $args = $self->$orig(@_);
-      $args->{$gen_attr} = delete $args->{$name} if eval { CodeLike->($args->{$name}); 1 };
-      return $args;
-    };
-    $orig->($name, %opts);
+    $opts{is} = 'ro';
+    $orig->($name, %opts); # so we have method to modify
+    install_modifier $target, 'before', $name => sub {
+      my $self = shift;
+      return if @_; # attempt at setting, hand to auto
+      my $value = $self->{$name};
+      return if !eval { CodeLike->($value); 1 }; # attempt at reading and already resolved
+      $self->{$name} = $value->();
+      $opts{isa}->($self->{$name}) if $opts{isa}; # validate
+    }
   });
 }
 
