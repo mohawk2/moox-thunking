@@ -25,15 +25,15 @@ sub import {
   _override_function($target, 'has', sub {
     my ($orig, $name, %opts) = @_;
     $orig->($name, %opts), return if $opts{is} ne 'thunked';
-    $opts{is} = 'ro';
+    $opts{is} = 'rwp';
     $orig->($name, %opts); # so we have method to modify
     install_modifier $target, 'before', $name => sub {
       my $self = shift;
       return if @_; # attempt at setting, hand to auto
       my $value = $self->{$name};
+      my $setter = "_set_$name";
       return if !eval { CodeLike->($value); 1 }; # attempt at reading and already resolved
-      $self->{$name} = $value->();
-      $opts{isa}->($self->{$name}) if $opts{isa}; # validate
+      $self->$setter($value->());
     }
   });
 }
