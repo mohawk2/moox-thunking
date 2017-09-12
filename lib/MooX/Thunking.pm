@@ -27,13 +27,15 @@ sub import {
     $orig->($name, %opts), return if $opts{is} ne 'thunked';
     $opts{is} = 'rwp';
     $orig->($name, %opts); # so we have method to modify
+    my $resolved_name = "_${name}_resolved";
+    $orig->($resolved_name, is => 'rw'); # cache whether resolved
     install_modifier $target, 'before', $name => sub {
       my $self = shift;
       return if @_; # attempt at setting, hand to auto
-      my $value = $self->{$name};
+      return if $self->$resolved_name; # already resolved
+      $self->$resolved_name(1);
       my $setter = "_set_$name";
-      return if !eval { CodeLike->($value); 1 }; # attempt at reading and already resolved
-      $self->$setter($value->());
+      $self->$setter($self->{$name}->());
     }
   });
 }
