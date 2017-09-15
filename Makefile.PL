@@ -20,6 +20,7 @@ WriteMakefile(
   PREREQ_PM => {
     'Moo' => '0',
     'Type::Tiny' => '0',
+    'Class::Method::Modifiers' => '0',
   },
   clean => { FILES => 'MooX-Thunking-*' },
   META_MERGE => {
