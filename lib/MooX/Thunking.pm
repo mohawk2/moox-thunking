@@ -19,6 +19,7 @@ sub _override_function {
 # end MooX::Utils;
 
 use Types::TypeTiny -all;
+use Type::Utils -all;
 use Class::Method::Modifiers qw(install_modifier);
 sub import {
   my $target = scalar caller;
@@ -26,6 +27,7 @@ sub import {
     my ($orig, $namespec, %opts) = @_;
     $orig->($namespec, %opts), return if $opts{is} ne 'thunked';
     $opts{is} = 'rwp';
+    $opts{isa} = union [ CodeLike, $opts{isa} ] if $opts{isa};
     $orig->($namespec, %opts); # so we have method to modify
     for my $name (ref $namespec ? @$namespec : $namespec) {
       my $resolved_name = "_${name}_resolved";
@@ -56,7 +58,7 @@ MooX::Thunking - Allow Moo attributes to be "thunked"
   use Types::Standard -all;
   has children => (
     is => 'thunked',
-    isa => CodeLike | ArrayRef[InstanceOf['Thunking']],
+    isa => ArrayRef[InstanceOf['Thunking']],
     required => 1,
   );
 
@@ -71,6 +73,10 @@ parameter to L<Moo/has>: "thunked". If used, this will allow you to
 transparently provide either a real value for the attribute, or a
 L<Types::TypeTiny/CodeLike> that when called will return such a real
 value.
+
+Note that in earlier versions of this module (up to 0.06), any C<isa>
+had to pass a C<CodeLike>. This is now taken care of by this module. It
+will continue to do the right thing if no C<isa> is supplied.
 
 =head1 AUTHOR
 

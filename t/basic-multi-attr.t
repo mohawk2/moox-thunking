@@ -7,7 +7,7 @@ use Types::Standard -all;
 use Types::TypeTiny -all;
 has [qw(children parent)] => (
   is => 'thunked',
-  isa => CodeLike | ArrayRef[InstanceOf['Thunking']],
+  isa => ArrayRef[InstanceOf['Thunking']],
 );
 
 package main;
