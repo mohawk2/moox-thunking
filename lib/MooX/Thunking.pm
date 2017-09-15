@@ -23,20 +23,22 @@ use Class::Method::Modifiers qw(install_modifier);
 sub import {
   my $target = scalar caller;
   _override_function($target, 'has', sub {
-    my ($orig, $name, %opts) = @_;
-    $orig->($name, %opts), return if $opts{is} ne 'thunked';
+    my ($orig, $namespec, %opts) = @_;
+    $orig->($namespec, %opts), return if $opts{is} ne 'thunked';
     $opts{is} = 'rwp';
-    $orig->($name, %opts); # so we have method to modify
-    my $resolved_name = "_${name}_resolved";
-    $orig->($resolved_name, is => 'rw'); # cache whether resolved
-    install_modifier $target, 'before', $name => sub {
-      my $self = shift;
-      return if @_; # attempt at setting, hand to auto
-      return if $self->$resolved_name; # already resolved
-      $self->$resolved_name(1);
-      return if !eval { CodeLike->($self->{$name}); 1 }; # not a thunk
-      my $setter = "_set_$name";
-      $self->$setter($self->{$name}->());
+    $orig->($namespec, %opts); # so we have method to modify
+    for my $name (ref $namespec ? @$namespec : $namespec) {
+      my $resolved_name = "_${name}_resolved";
+      $orig->($resolved_name, is => 'rw'); # cache whether resolved
+      install_modifier $target, 'before', $name => sub {
+        my $self = shift;
+        return if @_; # attempt at setting, hand to auto
+        return if $self->$resolved_name; # already resolved
+        $self->$resolved_name(1);
+        return if !eval { CodeLike->($self->{$name}); 1 }; # not a thunk
+        my $setter = "_set_$name";
+        $self->$setter($self->{$name}->());
+      };
     }
   });
 }
