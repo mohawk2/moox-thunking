@@ -1,3 +1,6 @@
+0.09 
+ - add missing prereq - thanks @manwar
+
 0.08 Fri Feb 23 02:50:56 GMT 2018
  - avoid pollute global $@ - found by @nohuhu
 
