@@ -33,6 +33,9 @@ WriteMakefile(
         url => 'git@github.com:mohawk2/moox-thunking.git',
         web => 'https://github.com/mohawk2/moox-thunking',
       },
+      bugtracker  => {
+        web => 'https://github.com/mohawk2/moox-thunking/issues',
+      },
       license => [ 'http://dev.perl.org/licenses/' ],
     },
     prereqs => {
